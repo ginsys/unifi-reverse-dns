@@ -92,13 +92,14 @@ def update_all_clients(username: str,
         update_count = 0
         clients = api.list_clients()
         for client in clients:
-            if (client_id:= client.get('user_id')) is not None:
+            if (client_id:= client.get('user_id')) is None:
+                log_print(f"{ip}: skipping")
+            else:
                 ip = client.get('ip')
                 new_name = get_hostname_from_ip(ip)
                 if new_name is None:
                     continue
-                #new_name = '.'.join(new_name[0].split('.')[:-1])
-                new_name = new_name[0].split('.', 1)[0]
+                new_name = new_name[0]
                 cur_name = client.get('name')
                 if not cur_name == new_name:
                     res = api.update_alias(client_id, new_name)
@@ -107,6 +108,8 @@ def update_all_clients(username: str,
                         log_print(f"{ip}: {cur_name} -> {new_name}")
                     else:
                         log_print(f"Unable to update {ip}!")
+                else:
+                    log_print(f"{ip}: {cur_name} already set")
     return update_count
 
 
